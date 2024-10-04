@@ -1,9 +1,11 @@
 import mongoose from "mongoose";
+import dotenv from "dotenv";
 
+dotenv.config();
 const localUrl = "127.0.0.1:27017";
 const dbName = "visioncare-eye-hospital";
 
-const cloudDb = `mongodb+srv://muthukumaran050700:a27diYD87N0ine5v@cluster0.3jsis.mongodb.net/${dbName}?retryWrites=true&w=majority&appName=Cluster0`;
+const cloudDb = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_CLUSTER}/${dbName}?retryWrites=true&w=majority&appName=Cluster0`;
 
 // const mongooseUrl = `mongodb://${localUrl}/${dbName}`;
 
