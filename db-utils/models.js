@@ -22,6 +22,9 @@ const patientSchema = new Schema({
   phoneNumber: { type: "number", required: true },
   pinCode: { type: "number", required: true },
   state: { type: "string", required: true },
+  isVerified: {
+    type: Boolean,
+  },
 });
 
 export const patientModel = new model("post", patientSchema, "patient");

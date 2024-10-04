@@ -17,11 +17,12 @@ patientRouter.get("/", async (req, res) => {
 
 patientRouter.post("/", async (req, res) => {
   const patientDetails = req.body;
-
+  console.log(patientDetails);
   // validate and insert new record into DB
   const patientObj = new patientModel({
     ...patientDetails,
     patientId: v4(),
+    isVerified: false,
   });
   try {
     //this line will validate and insert data into DB
