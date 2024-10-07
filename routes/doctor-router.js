@@ -7,57 +7,57 @@ import { createJwtToken } from "../utils/jwt-utils.js";
 import jwt from "jsonwebtoken";
 import { use } from "bcrypt/promises.js";
 
-const patientRouter = express.Router(); //creating a router
+const doctorRouter = express.Router(); //creating a router
 
-const patientCollection = db.collection("patients"); //optimization
+const doctorCollection = db.collection("doctors"); //optimization
 
 //Get all the patient data
 
-patientRouter.get("/", async (req, res) => {
-  const patientData = await patientCollection
+doctorRouter.get("/", async (req, res) => {
+  const doctorData = await doctorCollection
     .find({}, { projection: { _id: 0 } }, {})
     .toArray();
-  console.log(patientData);
-  res.json(patientData);
+  console.log(doctorData);
+  res.json(doctorData);
 });
 
 //create a patient data
 
-patientRouter.post("/", async (req, res) => {
-  const patientDetails = req.body;
+doctorRouter.post("/", async (req, res) => {
+  const doctorDetails = req.body;
   // checking email id for user wheather user exist or not
-  const patient = await patientCollection.findOne({
-    email: patientDetails.email,
+  const patient = await doctorCollection.findOne({
+    email: doctorDetails.email,
   });
   if (patient) {
     return res
       .status(409)
       .json({ msg: "Patient profile already exists", status: 409 });
   } else {
-    bcrypt.hash(patientDetails.password, 10, async (err, hash) => {
+    bcrypt.hash(doctorDetails.password, 10, async (err, hash) => {
       try {
-        patientDetails.password = hash;
-        await patientCollection.insertOne({
-          patientId: v4(),
-          ...patientDetails,
+        doctorDetails.password = hash;
+        await doctorCollection.insertOne({
+          doctorId: v4(),
+          ...doctorDetails,
           isVerified: false,
           isLoggedIn: false,
         });
         //token
-        const token = createJwtToken({ email: patientDetails.email }, "1d");
+        const token = createJwtToken({ email: doctorDetails.email }, "1d");
         console.log(token);
 
         const link = `${process.env.FE_URL}/verify-account?token=${token}`;
         //sending a mail
         await transporter.sendMail({
           ...mailOptions,
-          to: patientDetails.email,
-          subject: `Welcome to the Application ${patientDetails.fullName}`,
-          text: `Hi ${patientDetails.fullName},\n Thankyou for registering with us. \n To verify your account, click here ${link}`,
+          to: doctorDetails.email,
+          subject: `Welcome to the Application ${doctorDetails.fullName}`,
+          text: `Hi ${doctorDetails.fullName},\n Thankyou for registering with us. \n To verify your account, click here ${link}`,
         });
         return res
           .status(201)
-          .json({ msg: "Patient data created successfully", status: 201 });
+          .json({ msg: "Doctor data created successfully", status: 201 });
       } catch (e) {
         console.log("Error", e);
       }
@@ -67,15 +67,15 @@ patientRouter.post("/", async (req, res) => {
 
 //delete a patient data
 
-patientRouter.delete("/", async (req, res) => {
-  const patientId = req.query.id;
+doctorRouter.delete("/", async (req, res) => {
+  const doctorId = req.query.id;
 
   //Checking wheather the patient data exists or not
 
-  const patient = await patientCollection.findOne({ patientId });
+  const doctor = await doctorCollection.findOne({ patientId });
 
-  if (patient) {
-    await patientCollection.deleteOne({ patientId });
+  if (doctor) {
+    await doctorCollection.deleteOne({ doctorId });
     res.json({ msg: "Patient data deleted successfully" });
   } else {
     res.status(404).json({ msg: "patient not found" });
@@ -84,32 +84,32 @@ patientRouter.delete("/", async (req, res) => {
 
 //update patient profile
 
-patientRouter.put("/:id", async (req, res) => {
-  const patientId = req.params.id;
+doctorRouter.put("/:id", async (req, res) => {
+  const doctorId = req.params.id;
   const updateDetails = req.body;
 
   //Checking wheather the patient data exists or not
 
-  const patient = await patientCollection.findOne({ patientId });
+  const doctor = await doctorCollection.findOne({ doctorId });
 
-  if (patient) {
-    await patientCollection.updateOne(
-      { patientId },
+  if (doctor) {
+    await doctorCollection.updateOne(
+      { doctorId },
       {
         $set: {
           ...updateDetails,
         },
       }
     );
-    res.json({ msg: "Patient data updated successfully" });
+    res.json({ msg: "Doctor data updated successfully" });
   } else {
-    res.status(404).json({ msg: "patient not found" });
+    res.status(404).json({ msg: "doctor not found" });
   }
 });
 
 //verifying the token
 
-patientRouter.get("/verify-account", (req, res) => {
+doctorRouter.get("/verify-account", (req, res) => {
   const { token } = req.query;
 
   jwt.verify(token, process.env.JWT_SECRET, async (err, data) => {
@@ -120,7 +120,7 @@ patientRouter.get("/verify-account", (req, res) => {
     }
 
     const { email } = data;
-    await patientCollection.updateOne(
+    await doctorCollection.updateOne(
       {
         email,
       },
@@ -136,21 +136,21 @@ patientRouter.get("/verify-account", (req, res) => {
 
 //patient login
 
-patientRouter.post("/login", async (req, res) => {
+doctorRouter.post("/login", async (req, res) => {
   const { email, password } = req.body;
   try {
-    const patient = await patientCollection.findOne({ email });
+    const doctor = await doctorCollection.findOne({ email });
 
-    if (patient) {
-      bcrypt.compare(password, patient.password, (err, result) => {
+    if (doctor) {
+      bcrypt.compare(password, doctor.password, (err, result) => {
         if (err) {
           console.log(e);
           res.status(400).json({ msg: "Something went wrong" });
         } else if (result) {
-          delete patient.password;
+          delete doctor.password;
           const checkingLogged = async () => {
-            const { email } = patient;
-            await patientCollection.updateOne(
+            const { email } = doctor;
+            await doctorCollection.updateOne(
               {
                 email,
               },
@@ -162,13 +162,13 @@ patientRouter.post("/login", async (req, res) => {
             );
           };
           checkingLogged();
-          res.json({ msg: "user logged In successfully", patient });
+          res.json({ msg: "user logged In successfully", doctor });
         } else {
           res.status(400).json({ msg: "Invalid credentials" });
         }
       });
     } else {
-      res.status(400).json({ msg: "patient not found" });
+      res.status(400).json({ msg: "doctor not found" });
     }
   } catch (e) {
     res.status(500).json({ msg: "Internal server error" });
@@ -177,14 +177,14 @@ patientRouter.post("/login", async (req, res) => {
 
 //logout user
 
-patientRouter.post("/logout", async (req, res) => {
+doctorRouter.post("/logout", async (req, res) => {
   const { user } = req.body;
   const email = user;
   try {
-    const patient = await patientCollection.findOne({ email });
+    const patient = await doctorCollection.findOne({ email });
 
     if (patient) {
-      await patientCollection.updateOne(
+      await doctorCollection.updateOne(
         {
           email,
         },
@@ -200,4 +200,4 @@ patientRouter.post("/logout", async (req, res) => {
   }
 });
 
-export default patientRouter;
+export default doctorRouter;
