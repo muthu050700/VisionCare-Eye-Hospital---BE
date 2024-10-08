@@ -41,11 +41,9 @@ patientRouter.post("/", async (req, res) => {
           patientId: v4(),
           ...patientDetails,
           isVerified: false,
-          isLoggedIn: false,
         });
         //token
         const token = createJwtToken({ email: patientDetails.email }, "1d");
-        console.log(token);
 
         const link = `${process.env.FE_URL}/verify-account?token=${token}`;
         //sending a mail
@@ -55,9 +53,10 @@ patientRouter.post("/", async (req, res) => {
           subject: `Welcome to the Application ${patientDetails.fullName}`,
           text: `Hi ${patientDetails.fullName},\n Thankyou for registering with us. \n To verify your account, click here ${link}`,
         });
-        return res
-          .status(201)
-          .json({ msg: "Patient data created successfully", status: 201 });
+        return res.status(201).json({
+          msg: "Patient data created successfully",
+          status: 201,
+        });
       } catch (e) {
         console.log("Error", e);
       }
@@ -136,6 +135,52 @@ patientRouter.get("/verify-account", (req, res) => {
 
 //patient login
 
+// patientRouter.post("/login", async (req, res) => {
+//   const { email, password } = req.body;
+//   console.log(email, password);
+//   try {
+//     const patient = await patientCollection.findOne({ email });
+//     console.log(patient);
+//     if (patient) {
+//       bcrypt.compare(password, patient.password, (err, result) => {
+//         if (err) {
+//           console.log(e);
+//           res.status(400).json({ msg: "Something went wrong" });
+//         } else if (result) {
+//           delete patient.password;
+//           const checkingLogged = async () => {
+//             const { email } = patient;
+//             await patientCollection.updateOne(
+//               {
+//                 email,
+//               },
+//               {
+//                 $set: {
+//                   isLoggedIn: true,
+//                 },
+//               }
+//             );
+//             const loginTowken = createJwtToken({ email: email }, "5d");
+//             console.log(loginTowken);
+//             res.status(201).json({
+//               msg: "user logged In successfully",
+//               patient,
+//               loginTowken,
+//             });
+//           };
+//           checkingLogged();
+//         } else {
+//           res.status(400).json({ msg: "Invalid credentials" });
+//         }
+//       });
+//     } else {
+//       res.status(400).json({ msg: "patient not found" });
+//     }
+//   } catch (e) {
+//     res.status(500).json({ msg: "Internal server error" });
+//   }
+// });
+
 patientRouter.post("/login", async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -148,21 +193,13 @@ patientRouter.post("/login", async (req, res) => {
           res.status(400).json({ msg: "Something went wrong" });
         } else if (result) {
           delete patient.password;
-          const checkingLogged = async () => {
-            const { email } = patient;
-            await patientCollection.updateOne(
-              {
-                email,
-              },
-              {
-                $set: {
-                  isLoggedIn: true,
-                },
-              }
-            );
-          };
-          checkingLogged();
-          res.json({ msg: "user logged In successfully", patient });
+          //token
+          const tokenLogin = createJwtToken(
+            { email: patient.email, role: patient.Role },
+            "1d"
+          );
+          console.log(tokenLogin);
+          res.json({ msg: "user logged In successfully", patient, tokenLogin });
         } else {
           res.status(400).json({ msg: "Invalid credentials" });
         }
@@ -174,7 +211,6 @@ patientRouter.post("/login", async (req, res) => {
     res.status(500).json({ msg: "Internal server error" });
   }
 });
-
 //logout user
 
 patientRouter.post("/logout", async (req, res) => {
