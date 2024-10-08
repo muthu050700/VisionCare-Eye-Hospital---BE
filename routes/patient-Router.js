@@ -135,52 +135,6 @@ patientRouter.get("/verify-account", (req, res) => {
 
 //patient login
 
-// patientRouter.post("/login", async (req, res) => {
-//   const { email, password } = req.body;
-//   console.log(email, password);
-//   try {
-//     const patient = await patientCollection.findOne({ email });
-//     console.log(patient);
-//     if (patient) {
-//       bcrypt.compare(password, patient.password, (err, result) => {
-//         if (err) {
-//           console.log(e);
-//           res.status(400).json({ msg: "Something went wrong" });
-//         } else if (result) {
-//           delete patient.password;
-//           const checkingLogged = async () => {
-//             const { email } = patient;
-//             await patientCollection.updateOne(
-//               {
-//                 email,
-//               },
-//               {
-//                 $set: {
-//                   isLoggedIn: true,
-//                 },
-//               }
-//             );
-//             const loginTowken = createJwtToken({ email: email }, "5d");
-//             console.log(loginTowken);
-//             res.status(201).json({
-//               msg: "user logged In successfully",
-//               patient,
-//               loginTowken,
-//             });
-//           };
-//           checkingLogged();
-//         } else {
-//           res.status(400).json({ msg: "Invalid credentials" });
-//         }
-//       });
-//     } else {
-//       res.status(400).json({ msg: "patient not found" });
-//     }
-//   } catch (e) {
-//     res.status(500).json({ msg: "Internal server error" });
-//   }
-// });
-
 patientRouter.post("/login", async (req, res) => {
   const { email, password } = req.body;
   try {
