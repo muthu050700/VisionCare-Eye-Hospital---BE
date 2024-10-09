@@ -66,45 +66,45 @@ patientRouter.post("/", async (req, res) => {
 
 //delete a patient data
 
-patientRouter.delete("/", async (req, res) => {
-  const patientId = req.query.id;
+// patientRouter.delete("/", async (req, res) => {
+//   const patientId = req.query.id;
 
-  //Checking wheather the patient data exists or not
+//   //Checking wheather the patient data exists or not
 
-  const patient = await patientCollection.findOne({ patientId });
+//   const patient = await patientCollection.findOne({ patientId });
 
-  if (patient) {
-    await patientCollection.deleteOne({ patientId });
-    res.json({ msg: "Patient data deleted successfully" });
-  } else {
-    res.status(404).json({ msg: "patient not found" });
-  }
-});
+//   if (patient) {
+//     await patientCollection.deleteOne({ patientId });
+//     res.json({ msg: "Patient data deleted successfully" });
+//   } else {
+//     res.status(404).json({ msg: "patient not found" });
+//   }
+// });
 
 //update patient profile
 
-patientRouter.put("/:id", async (req, res) => {
-  const patientId = req.params.id;
-  const updateDetails = req.body;
+// patientRouter.put("/:id", async (req, res) => {
+//   const patientId = req.params.id;
+//   const updateDetails = req.body;
 
-  //Checking wheather the patient data exists or not
+//   //Checking wheather the patient data exists or not
 
-  const patient = await patientCollection.findOne({ patientId });
+//   const patient = await patientCollection.findOne({ patientId });
 
-  if (patient) {
-    await patientCollection.updateOne(
-      { patientId },
-      {
-        $set: {
-          ...updateDetails,
-        },
-      }
-    );
-    res.json({ msg: "Patient data updated successfully" });
-  } else {
-    res.status(404).json({ msg: "patient not found" });
-  }
-});
+//   if (patient) {
+//     await patientCollection.updateOne(
+//       { patientId },
+//       {
+//         $set: {
+//           ...updateDetails,
+//         },
+//       }
+//     );
+//     res.json({ msg: "Patient data updated successfully" });
+//   } else {
+//     res.status(404).json({ msg: "patient not found" });
+//   }
+// });
 
 //verifying the token
 
@@ -137,57 +137,52 @@ patientRouter.get("/verify-account", (req, res) => {
 
 patientRouter.post("/login", async (req, res) => {
   const { email, password } = req.body;
-  try {
-    const patient = await patientCollection.findOne({ email });
+  // try {
+  //   const patient = await patientCollection.findOne({ email });
 
-    if (patient) {
-      bcrypt.compare(password, patient.password, (err, result) => {
-        if (err) {
-          console.log(e);
-          res.status(400).json({ msg: "Something went wrong" });
-        } else if (result) {
-          delete patient.password;
-          //token
-          const tokenLogin = createJwtToken(
-            { email: patient.email, role: patient.Role },
-            "1d"
-          );
-          console.log(tokenLogin);
-          res.json({ msg: "user logged In successfully", patient, tokenLogin });
-        } else {
-          res.status(400).json({ msg: "Invalid credentials" });
-        }
-      });
-    } else {
-      res.status(400).json({ msg: "patient not found" });
-    }
-  } catch (e) {
-    res.status(500).json({ msg: "Internal server error" });
+  //   if (patient) {
+  //     bcrypt.compare(password, patient.password, (err, result) => {
+  //       if (err) {
+  //         console.log(e);
+  //         res.status(400).json({ msg: "Something went wrong" });
+  //       } else if (result) {
+  //         delete patient.password;
+  //         //token
+  //         const tokenLogin = createJwtToken(
+  //           { email: patient.email, role: patient.Role },
+  //           "1d"
+  //         );
+  //         console.log(tokenLogin);
+  //         res.json({ msg: "user logged In successfully", patient, tokenLogin });
+  //       } else {
+  //         res.status(400).json({ msg: "Invalid credentials" });
+  //       }
+  //     });
+  //   } else {
+  //     res.status(400).json({ msg: "patient not found" });
+  //   }
+  // } catch (e) {
+  //   res.status(500).json({ msg: "Internal server error" });
+  // }
+
+  const user = await patientCollection.findOne({ email });
+
+  if (!user) {
+    return res.status(404).json({ msg: "Patient not found" });
   }
-});
-//logout user
 
-patientRouter.post("/logout", async (req, res) => {
-  const { user } = req.body;
-  const email = user;
-  try {
-    const patient = await patientCollection.findOne({ email });
+  const isMatch = await bcrypt.compare(password, user.password);
 
-    if (patient) {
-      await patientCollection.updateOne(
-        {
-          email,
-        },
-        {
-          $set: {
-            isLoggedIn: false,
-          },
-        }
-      );
-    }
-  } catch (e) {
-    res.status(500).json({ msg: "Internal server error" });
+  if (!isMatch) {
+    return res.status(401).json({ msg: "Incorrect password" });
   }
+
+  const tokenLogin = createJwtToken(
+    { email: user.email, role: user.Role },
+    "1d"
+  );
+  console.log(tokenLogin);
+  return res.json({ msg: "user logged In successfully", user, tokenLogin });
 });
 
 export default patientRouter;
