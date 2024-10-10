@@ -6,10 +6,10 @@ dotenv.config();
 const userVerifyToken = (req, res, next) => {
   let token;
   let authHeader = req.headers.Authorization || req.headers.authorization;
-
+  console.log(authHeader);
   if (authHeader || authHeader.startsWith("Bearer")) {
     token = authHeader.split(" ")[1];
-    console.log(token);
+    console.log("token", token);
     if (!token) {
       return res.status(401).json({ msg: "No token, authorization is denied" });
     }

@@ -67,7 +67,7 @@ export const login = async (req, res) => {
   }
 
   const tokenLogin = createJwtToken(
-    { email: user.email, role: user.role },
+    { email: user.email, role: user.role, id: user.id },
     "1d"
   );
 

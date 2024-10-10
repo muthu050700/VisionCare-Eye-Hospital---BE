@@ -53,29 +53,29 @@
 // //   }
 // // });
 
-// //update patient profile
+//update patient profile
 
-// // patientRouter.put("/:id", async (req, res) => {
-// //   const patientId = req.params.id;
-// //   const updateDetails = req.body;
+patientRouter.put("/:id", async (req, res) => {
+  const patientId = req.params.id;
+  const updateDetails = req.body;
 
-// //Checking wheather the patient data exists or not
+  // Checking wheather the patient data exists or not
 
-// //   const patient = await patientCollection.findOne({ patientId });
+  const patient = await patientCollection.findOne({ patientId });
 
-// //   if (patient) {
-// //     await patientCollection.updateOne(
-// //       { patientId },
-// //       {
-// //         $set: {
-// //           ...updateDetails,
-// //         },
-// //       }
-// //     );
-// //     res.json({ msg: "Patient data updated successfully" });
-// //   } else {
-// //     res.status(404).json({ msg: "patient not found" });
-// //   }
-// // });
+  if (patient) {
+    await patientCollection.updateOne(
+      { patientId },
+      {
+        $set: {
+          ...updateDetails,
+        },
+      }
+    );
+    res.json({ msg: "Patient data updated successfully" });
+  } else {
+    res.status(404).json({ msg: "patient not found" });
+  }
+});
 
-// export default patientRouter;
+export default patientRouter;
