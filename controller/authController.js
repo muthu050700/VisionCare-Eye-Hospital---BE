@@ -24,7 +24,7 @@ export const register = async (req, res) => {
       try {
         userDetails.password = hash;
         await userCollection.insertOne({
-          patientId: v4(),
+          id: v4(),
           ...userDetails,
           isVerified: false,
         });
@@ -53,7 +53,7 @@ export const register = async (req, res) => {
 // Login a user
 export const login = async (req, res) => {
   const { email, password } = req.body;
-  console.lo;
+  console.log(email, password);
   const user = await userCollection.findOne({ email });
   console.log(user);
   if (!user) {
@@ -70,6 +70,6 @@ export const login = async (req, res) => {
     { email: user.email, role: user.role },
     "1d"
   );
-  console.log(tokenLogin);
+
   return res.json({ msg: "user logged In successfully", user, tokenLogin });
 };

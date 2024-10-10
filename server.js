@@ -7,6 +7,7 @@ import cors from "cors";
 import appointmentRouter from "./routes/book-appointment.js";
 import doctorRouter from "./routes/doctor-router.js";
 import authRouter from "./routes/authRouter.js";
+import userRouter from "./routes/userRoute.js";
 
 const server = express();
 
@@ -18,6 +19,7 @@ server.use("/patients", patientRouter);
 server.use("/doctors", doctorRouter);
 server.use("/book-appointment", appointmentRouter);
 server.use("/auth-router", authRouter);
+server.use("/api/users", userRouter);
 //Top level module await
 await connectToDb();
 
