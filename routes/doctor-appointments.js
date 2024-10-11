@@ -25,7 +25,7 @@ doctorAppointmentRouter.get(
     const id = req.params.id;
     console.log(id);
     const appointments = await bookAppointment
-      .find({}, { projection: { _id: 0 } }, {})
+      .find({ id }, { projection: { _id: 0 } }, {})
       .toArray();
     console.log(appointments);
     res.json({ msg: "Appointments for you", appointments });
