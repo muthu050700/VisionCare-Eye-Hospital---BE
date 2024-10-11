@@ -17,31 +17,81 @@ appointmentRouter.get("/", async (req, res) => {
   res.json(appointmentData);
 });
 
-export default appointmentRouter;
-
 //get a specific appointments for doctors
 
 appointmentRouter.get("/doctor/appointments/:id", async (req, res) => {
   const doctorId = req.params.doctorId;
 
   const appointments = await bookAppointment.find({ doctorId }).toArray();
-
-  console.log(appointments);
 });
 
 //create a appointment user data
 
+//Ensured only patient can book the appointment
 appointmentRouter.post(
   "/",
   userVerifyToken,
   authorizeRoles("patient"),
   async (req, res) => {
     const appointmentDetails = req.body;
-    console.log(appointmentDetails);
+    const formDetails = appointmentDetails.formData;
+    const patientId = appointmentDetails.patientId;
     await bookAppointment.insertOne({
       id: v4(),
-      ...appointmentDetails,
+      ...formDetails,
+      patientId,
     });
     res.status(200).json({ msg: "appointment booked successfully" });
   }
 );
+
+// get the appointsment for the paitent to see the status
+appointmentRouter.get("/appointment-status/:id", async (req, res) => {
+  const id = req.params.id;
+  const appointmentData = await bookAppointment
+    .find({ patientId: id }, { projection: { _id: 0 } }, {})
+    .toArray();
+  res.json(appointmentData);
+});
+
+//reschedule the appointment by patient
+
+appointmentRouter.put("/patient/reschedule/:id", async (req, res) => {
+  const id = req.params.id;
+  const userDetails = req.body;
+  console.log(userDetails, id);
+  const user = await bookAppointment.findOne({ id });
+
+  if (user) {
+    try {
+      delete user.appointmentDate;
+      delete user.appointmentTime;
+      const updatedUser = { ...user };
+      console.log(updatedUser);
+      await bookAppointment.updateOne(
+        { id },
+        {
+          $set: {
+            ...userDetails,
+          },
+        }
+      );
+      await bookAppointment.updateOne(
+        { id },
+        {
+          $unset: {
+            appointmentDate: 1,
+            appointmentTime: 1,
+          },
+        }
+      );
+      return res.json({
+        msg: "user data updated successfully",
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  }
+});
+
+export default appointmentRouter;
