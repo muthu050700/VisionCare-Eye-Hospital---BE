@@ -14,13 +14,7 @@ const bookAppointment = db.collection("book-appointment"); //optimization
 doctorAppointmentRouter.get(
   "/:id",
   userVerifyToken,
-  authorizeRoles(
-    "doctor",
-    "Optometrist",
-    "Ophthalmologist",
-    "Surgeon",
-    "Consultant"
-  ),
+  authorizeRoles("cataracts", "glaucoma", "macular degeneration"),
   async (req, res) => {
     const id = req.params.id;
     console.log(id);

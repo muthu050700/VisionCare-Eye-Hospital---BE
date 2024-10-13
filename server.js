@@ -10,6 +10,8 @@ import authRouter from "./routes/authRouter.js";
 import userRouter from "./routes/userRoute.js";
 import doctorAppointmentRouter from "./routes/doctor-appointments.js";
 import adminRoute from "./routes/adminRoute.js";
+import medicalRecords from "./routes/medicalRecordRouter.js";
+import userProfileUpdateRoute from "./routes/userProfileUpdateRoute.js";
 
 const server = express();
 
@@ -24,6 +26,8 @@ server.use("/auth-router", authRouter);
 server.use("/api/users", userRouter);
 server.use("/doctor/appointments", doctorAppointmentRouter);
 server.use("/admin", adminRoute);
+server.use("/medical-records", medicalRecords);
+server.use("/profile", userProfileUpdateRoute);
 //Top level module await
 await connectToDb();
 

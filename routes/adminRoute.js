@@ -12,7 +12,7 @@ const userCollection = db.collection("users"); //optimization
 adminRoute.get(
   "/users",
   userVerifyToken,
-  authorizeRoles("admin", "doctor"),
+  authorizeRoles("admin", "cataracts", "glaucoma", "macular degeneration"),
   async (req, res) => {
     const data = await userCollection
       .find({}, { projection: { _id: 0 } }, {})
@@ -28,14 +28,7 @@ adminRoute.get(
 adminRoute.put(
   "/updateRole/:id",
   userVerifyToken,
-  authorizeRoles(
-    "admin",
-    "doctor",
-    "Optometrist",
-    "Ophthalmologist",
-    "Surgeon",
-    "Consultant"
-  ),
+  authorizeRoles("admin"),
   async (req, res) => {
     const id = req.params.id;
     console.log(id);

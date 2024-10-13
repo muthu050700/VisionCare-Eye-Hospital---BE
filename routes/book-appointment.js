@@ -5,7 +5,7 @@ import userVerifyToken from "../middlewares/authMiddleware.js";
 import authorizeRoles from "../middlewares/roleMiddleware.js";
 const appointmentRouter = express.Router(); //creating a router
 
-const bookAppointment = db.collection("book-appointment"); //optimization
+export const bookAppointment = db.collection("book-appointment"); //optimization
 
 //Get all the patient data
 
@@ -36,12 +36,17 @@ appointmentRouter.post(
     const appointmentDetails = req.body;
     const formDetails = appointmentDetails.formData;
     const patientId = appointmentDetails.patientId;
-    await bookAppointment.insertOne({
-      id: v4(),
-      ...formDetails,
-      patientId,
-    });
-    res.status(200).json({ msg: "appointment booked successfully" });
+    try {
+      await bookAppointment.insertOne({
+        id: v4(),
+        ...formDetails,
+        patientId,
+      });
+      return res.status(200).json({ msg: "Appointment booked successfully" });
+    } catch (e) {
+      console.log(e);
+      return res.json({ msg: "There is some error" });
+    }
   }
 );
 
@@ -163,6 +168,34 @@ appointmentRouter.put("/patient/cancel/:id", async (req, res) => {
       );
       return res.json({
         msg: "Appointment cancelled successfully",
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  }
+});
+
+//assign appointments
+
+appointmentRouter.put("/assign-appointments/:id", async (req, res) => {
+  const id = req.params.id;
+  console.log(id);
+  const data = req.body;
+  const doctorId = data.doctorId;
+  const user = await bookAppointment.findOne({ id });
+
+  if (user) {
+    try {
+      await bookAppointment.updateOne(
+        { id },
+        {
+          $set: {
+            doctorId,
+          },
+        }
+      );
+      return res.json({
+        msg: "doctor assigned successfully",
       });
     } catch (e) {
       console.log(e);
