@@ -61,44 +61,49 @@ appointmentRouter.get("/appointment-status/:id", async (req, res) => {
 
 //reschedule the appointment by patient
 
-appointmentRouter.put("/patient/reschedule/:id", async (req, res) => {
-  const id = req.params.id;
-  const userDetails = req.body;
-  console.log(userDetails, id);
-  const user = await bookAppointment.findOne({ id });
+appointmentRouter.put(
+  "/patient/reschedule/:id",
+  userVerifyToken,
+  authorizeRoles("patient"),
+  async (req, res) => {
+    const id = req.params.id;
+    const userDetails = req.body;
+    console.log(userDetails, id);
+    const user = await bookAppointment.findOne({ id });
 
-  if (user) {
-    try {
-      delete user.appointmentDate;
-      delete user.appointmentTime;
-      const updatedUser = { ...user };
-      console.log(updatedUser);
-      await bookAppointment.updateOne(
-        { id },
-        {
-          $set: {
-            ...userDetails,
-            status: "pending",
-          },
-        }
-      );
-      await bookAppointment.updateOne(
-        { id },
-        {
-          $unset: {
-            appointmentDate: 1,
-            appointmentTime: 1,
-          },
-        }
-      );
-      return res.json({
-        msg: "user data updated successfully",
-      });
-    } catch (e) {
-      console.log(e);
+    if (user) {
+      try {
+        delete user.appointmentDate;
+        delete user.appointmentTime;
+        const updatedUser = { ...user };
+        console.log(updatedUser);
+        await bookAppointment.updateOne(
+          { id },
+          {
+            $set: {
+              ...userDetails,
+              status: "pending",
+            },
+          }
+        );
+        await bookAppointment.updateOne(
+          { id },
+          {
+            $unset: {
+              appointmentDate: 1,
+              appointmentTime: 1,
+            },
+          }
+        );
+        return res.json({
+          msg: "user data updated successfully",
+        });
+      } catch (e) {
+        console.log(e);
+      }
     }
   }
-});
+);
 
 //update the status by doctor
 
@@ -133,47 +138,52 @@ appointmentRouter.put("/doctor/update-status/:id", async (req, res) => {
 
 //cancelling the appointment by patient
 
-appointmentRouter.put("/patient/cancel/:id", async (req, res) => {
-  const id = req.params.id;
-  const userDetails = {
-    status: "Appointment cancelled",
-  };
-  console.log(userDetails, id);
-  const user = await bookAppointment.findOne({ id });
+appointmentRouter.put(
+  "/patient/cancel/:id",
+  userVerifyToken,
+  authorizeRoles("patient"),
+  async (req, res) => {
+    const id = req.params.id;
+    const userDetails = {
+      status: "Appointment cancelled",
+    };
+    console.log(userDetails, id);
+    const user = await bookAppointment.findOne({ id });
 
-  if (user) {
-    try {
-      delete user.appointmentDate;
-      delete user.appointmentTime;
-      const updatedUser = { ...user };
-      console.log(updatedUser);
-      await bookAppointment.updateOne(
-        { id },
-        {
-          $set: {
-            ...userDetails,
-          },
-        }
-      );
-      await bookAppointment.updateOne(
-        { id },
-        {
-          $unset: {
-            appointmentDate: 1,
-            appointmentTime: 1,
-            rescheduledDate: 1,
-            rescheduledTime: 1,
-          },
-        }
-      );
-      return res.json({
-        msg: "Appointment cancelled successfully",
-      });
-    } catch (e) {
-      console.log(e);
+    if (user) {
+      try {
+        delete user.appointmentDate;
+        delete user.appointmentTime;
+        const updatedUser = { ...user };
+        console.log(updatedUser);
+        await bookAppointment.updateOne(
+          { id },
+          {
+            $set: {
+              ...userDetails,
+            },
+          }
+        );
+        await bookAppointment.updateOne(
+          { id },
+          {
+            $unset: {
+              appointmentDate: 1,
+              appointmentTime: 1,
+              rescheduledDate: 1,
+              rescheduledTime: 1,
+            },
+          }
+        );
+        return res.json({
+          msg: "Appointment cancelled successfully",
+        });
+      } catch (e) {
+        console.log(e);
+      }
     }
   }
-});
+);
 
 //assign appointments
 
